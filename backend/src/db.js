@@ -22,7 +22,11 @@ export async function initializeDatabase() {
   await pool.query(
     `INSERT INTO users (name, email, password_hash, role)
      VALUES ('Administración Ecopedal', $1, $2, 'admin')
-     ON CONFLICT (email) DO NOTHING`,
+     ON CONFLICT (email) DO UPDATE SET
+       name = EXCLUDED.name,
+       password_hash = EXCLUDED.password_hash,
+       role = 'admin',
+       status = 'active'`,
     [adminEmail, adminHash],
   );
 
