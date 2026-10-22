@@ -1,11 +1,13 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { fileURLToPath } from 'node:url';
 import { authRouter } from './routes/auth.js';
 import { apiRouter } from './routes/api.js';
 import { allowFrontendOrigins, enforceSameOrigin } from './middleware/auth.js';
 
 export const app = express();
+const frontendPath = fileURLToPath(new URL('../public/', import.meta.url));
 app.disable('x-powered-by');
 app.set('trust proxy', 1);
 app.use(helmet({
@@ -30,6 +32,7 @@ app.use('/api', enforceSameOrigin);
 app.get('/health', (_request, response) => response.json({ status: 'ok' }));
 app.use('/api/auth', authRouter);
 app.use('/api', apiRouter);
+app.use(express.static(frontendPath, { index: 'index.html' }));
 app.use((error, _request, response, _next) => {
   console.error(error);
   if (error.type === 'entity.parse.failed') return response.status(400).json({ error: 'El cuerpo JSON no es válido.' });

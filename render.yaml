@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: ecopedal-app
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ecopedal-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SESSION_COOKIE_SAME_SITE
+        value: lax
+      - key: FRONTEND_ORIGINS
+        value: https://minicrisboo.github.io
+
+databases:
+  - name: ecopedal-db
+    databaseName: ecopedal
+    user: ecopedal
+    postgresMajorVersion: '16'
+    plan: free
+    region: oregon

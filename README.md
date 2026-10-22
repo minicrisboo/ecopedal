@@ -47,4 +47,12 @@ El backend acepta únicamente los orígenes declarados en `FRONTEND_ORIGINS`; la
 
 GitHub Pages no publica ni ejecuta el backend, y `localhost` nunca es una URL pública. Para que otras personas accedan, Pages y el backend deben quedar desplegados y la variable `ECOPEDAL_API_URL` debe apuntar a la API real. No expongas PostgreSQL directamente a Internet.
 
+### Desplegar app, API y PostgreSQL en Render
+
+El archivo `render.yaml` define la aplicación completa (frontend + API en el mismo origen) y PostgreSQL. En Render, crea un **Blueprint** desde `https://github.com/minicrisboo/ecopedal`; Render leerá esa definición y te pedirá `ADMIN_EMAIL` y `ADMIN_PASSWORD` directamente en su panel. No pegues esos valores en GitHub ni en este chat. El sitio estará en `https://ecopedal-app.onrender.com`; ahí el login usa cookies del mismo origen y no depende de cookies de terceros.
+
+El Blueprint usa recursos gratuitos para una demostración. Render apaga el servicio web tras inactividad y su PostgreSQL gratuito vence a los 30 días; no lo uses para datos importantes. Para conservar cuentas y reservas, cambia la base de datos a un plan pagado antes de que venza y revisa los precios actuales de Render.
+
+GitHub Pages sigue disponible como frontend estático; el login completo debe usarse desde el sitio Render. Si conectas Pages a la API, algunos navegadores pueden bloquear la cookie cross-site entre `github.io` y `onrender.com`.
+
 La aplicación no procesa pagos. Antes de aceptar reservas reales, integra un proveedor de pagos y define políticas de cancelación y protección de datos.
