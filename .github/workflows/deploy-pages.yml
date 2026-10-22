@@ -45,6 +45,8 @@ jobs:
           const html = await readFile(indexPath, 'utf8');
           const value = process.env.API_BASE_URL?.trim();
           let apiOrigin = '';
+          const apiMetaPattern = /(<meta name="ecopedal-api-url" content=")[^"]*(")/;
+          if (!apiMetaPattern.test(html)) throw new Error('No se encontró la meta ecopedal-api-url en index.html.');
           if (value) {
             const url = new URL(value);
             if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
@@ -56,10 +58,9 @@ jobs:
           }
 
           const configured = html.replace(
-            /(<meta name="ecopedal-api-url" content=")[^"]*(")/,
+            apiMetaPattern,
             (_match, prefix, suffix) => `${prefix}${apiOrigin}${suffix}`,
           );
-          if (configured === html) throw new Error('No se encontró la meta ecopedal-api-url en index.html.');
           await writeFile(indexPath, configured);
           NODE
 
