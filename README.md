@@ -31,14 +31,12 @@ Para ejecutarlo en segundo plano usa `docker compose up --build -d`; consulta lo
 
 GitHub Pages solo ejecuta el frontend estático. La API y PostgreSQL deben estar publicados por separado en un proveedor que admita Node/Docker y una base de datos persistente. No subas `.env` ni credenciales al repositorio.
 
-Instala Git, crea un repositorio vacío en GitHub (sin README ni archivos iniciales) y, desde esta carpeta, ejecuta en PowerShell reemplazando el usuario por el tuyo:
+El código fuente está en [github.com/minicrisboo/ecopedal](https://github.com/minicrisboo/ecopedal). Para publicar cambios futuros desde esta carpeta:
 
 ```powershell
-git init -b main
 git add .
-git commit -m "Preparar Ecopedal para GitHub Pages"
-git remote add origin https://github.com/TU_USUARIO/ecopedal.git
-git push -u origin main
+git commit -m "Actualizar Ecopedal"
+git push origin main
 ```
 
 1. Despliega `backend/` y PostgreSQL en un proveedor cloud que acepte contenedores. Usa `backend/Dockerfile` para el servicio API y configura `NODE_ENV=production`, `DATABASE_URL`, `JWT_SECRET` (mínimo 32 caracteres), `ADMIN_EMAIL`, `ADMIN_PASSWORD` (mínimo 12 caracteres), `SESSION_COOKIE_SAME_SITE=none` y `FRONTEND_ORIGINS=https://TU_USUARIO.github.io`. Usa la URL HTTPS pública del backend.
