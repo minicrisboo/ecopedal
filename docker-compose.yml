@@ -1,0 +1,66 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ecopedal
+      POSTGRES_USER: ecopedal
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Define POSTGRES_PASSWORD en .env}
+    volumes:
+      - ecopedal-db:/var/lib/postgresql/data
+    networks:
+      - ecopedal-internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ecopedal -d ecopedal"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgres://ecopedal:${POSTGRES_PASSWORD}@db:5432/ecopedal
+      JWT_SECRET: ${JWT_SECRET:?Define JWT_SECRET en .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Define ADMIN_EMAIL en .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Define ADMIN_PASSWORD en .env}
+      FRONTEND_ORIGINS: ${FRONTEND_ORIGINS:-}
+      SESSION_COOKIE_SAME_SITE: ${SESSION_COOKIE_SAME_SITE:-lax}
+      SESSION_MAX_AGE_HOURS: 12
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - ecopedal-internal
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 4s
+      retries: 10
+      start_period: 20s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - ecopedal-internal
+
+networks:
+  ecopedal-internal:
+    driver: bridge
+
+volumes:
+  ecopedal-db:

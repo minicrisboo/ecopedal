@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#153e35" />
+    <meta name="description" content="Ecopedal conecta a ciclistas con bicicletas disponibles para cada trayecto." />
+    <meta name="ecopedal-api-url" content="" />
+    <title>Ecopedal | Muévete con propósito</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+  </head>
+  <body>
+    <div id="splash-screen" class="splash-screen" role="status" aria-label="Cargando Ecopedal">
+      <div class="splash-orbit"><i data-lucide="bike"></i></div>
+      <p class="splash-wordmark">eco<span>pedal</span></p>
+      <p class="splash-caption">Cada trayecto cuenta</p>
+      <div class="splash-progress"><span></span></div>
+    </div>
+    <div id="site-shell" class="site-shell is-hidden">
+      <header class="topbar">
+        <a class="brand" href="#catalogo" aria-label="Ecopedal, inicio"><span class="brand-mark"><i data-lucide="bike"></i></span><span>eco<span class="brand-light">pedal</span></span></a>
+        <nav id="main-nav" class="main-nav" aria-label="Navegación principal"></nav>
+        <div id="account-menu" class="topbar-right"></div>
+      </header>
+      <main id="app" class="app-main" aria-live="polite"></main>
+      <footer class="site-footer"><span>Ecopedal</span><span>Muévete con propósito.</span><span id="footer-year"></span></footer>
+    </div>
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+    <script type="module" src="./js/app-controller.js?v=3"></script>
+  </body>
+</html>
