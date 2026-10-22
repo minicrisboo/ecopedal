@@ -41,18 +41,23 @@ jobs:
           node --input-type=module <<'NODE'
           import { readFile, writeFile } from 'node:fs/promises';
 
-          const value = process.env.API_BASE_URL?.trim();
-          if (!value) throw new Error('Define la variable de repositorio ECOPEDAL_API_URL con el origen HTTPS de la API.');
-          const url = new URL(value);
-          if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
-            throw new Error('ECOPEDAL_API_URL debe ser un origen HTTPS, por ejemplo https://api.example.com');
-          }
-
           const indexPath = '_site/index.html';
           const html = await readFile(indexPath, 'utf8');
+          const value = process.env.API_BASE_URL?.trim();
+          let apiOrigin = '';
+          if (value) {
+            const url = new URL(value);
+            if (url.protocol !== 'https:' || url.pathname !== '/' || url.search || url.hash) {
+              throw new Error('ECOPEDAL_API_URL debe ser un origen HTTPS, por ejemplo https://api.example.com');
+            }
+            apiOrigin = url.origin;
+          } else {
+            console.warn('ECOPEDAL_API_URL no está definida. Se publicará la interfaz, pero la autenticación requiere desplegar primero la API.');
+          }
+
           const configured = html.replace(
             /(<meta name="ecopedal-api-url" content=")[^"]*(")/,
-            (_match, prefix, suffix) => `${prefix}${url.origin}${suffix}`,
+            (_match, prefix, suffix) => `${prefix}${apiOrigin}${suffix}`,
           );
           if (configured === html) throw new Error('No se encontró la meta ecopedal-api-url en index.html.');
           await writeFile(indexPath, configured);
