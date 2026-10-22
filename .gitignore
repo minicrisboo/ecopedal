@@ -5,5 +5,7 @@ node_modules/
 backend/node_modules/
 _site/
 dist/
+.wrangler/
+.dev.vars*
 .DS_Store
 Thumbs.db

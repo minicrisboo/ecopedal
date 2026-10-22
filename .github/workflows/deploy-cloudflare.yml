@@ -1,0 +1,130 @@
+name: Deploy Ecopedal to Cloudflare Workers
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Prepare site assets
+        run: |
+          mkdir -p _site/js
+          cp index.html styles.css _site/
+          cp -R js/. _site/js/
+
+      - name: Validate Cloudflare credentials
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ADMIN_EMAIL: ${{ vars.ECOPEDAL_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ECOPEDAL_ADMIN_PASSWORD }}
+        run: |
+          test -n "$ACCOUNT_ID" || { echo "::error::Configura CLOUDFLARE_ACCOUNT_ID en GitHub Secrets."; exit 1; }
+          test -n "$API_TOKEN" || { echo "::error::Configura CLOUDFLARE_API_TOKEN en GitHub Secrets."; exit 1; }
+          test -n "$ADMIN_EMAIL" || { echo "::error::Configura ECOPEDAL_ADMIN_EMAIL en GitHub Actions Variables."; exit 1; }
+          test -n "$ADMIN_PASSWORD" || { echo "::error::Configura ECOPEDAL_ADMIN_PASSWORD en GitHub Secrets."; exit 1; }
+
+      - name: Deploy Worker and provision D1
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 deploy
+
+      - name: Apply D1 migrations
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 d1 migrations apply ecopedal-db --remote --yes
+
+      - name: Set administrator credentials
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ADMIN_EMAIL: ${{ vars.ECOPEDAL_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ECOPEDAL_ADMIN_PASSWORD }}
+        run: |
+          printf '%s' "$ADMIN_EMAIL" | npx --yes wrangler@4 secret put ADMIN_EMAIL
+          printf '%s' "$ADMIN_PASSWORD" | npx --yes wrangler@4 secret put ADMIN_PASSWORDname: Deploy Ecopedal to Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Prepare static assets
+        run: |
+          mkdir -p _site/js
+          cp index.html styles.css _site/
+          cp -R js/. _site/js/
+          touch _site/.nojekyll
+
+      - name: Validate Cloudflare settings
+        env:
+          ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ADMIN_EMAIL: ${{ vars.ECOPEDAL_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ECOPEDAL_ADMIN_PASSWORD }}
+        run: |
+          test -n "$ACCOUNT_ID" || { echo "::error::Configura CLOUDFLARE_ACCOUNT_ID en GitHub Secrets."; exit 1; }
+          test -n "$API_TOKEN" || { echo "::error::Configura CLOUDFLARE_API_TOKEN en GitHub Secrets."; exit 1; }
+          test -n "$ADMIN_EMAIL" || { echo "::error::Configura ECOPEDAL_ADMIN_EMAIL en GitHub Actions Variables."; exit 1; }
+          test -n "$ADMIN_PASSWORD" || { echo "::error::Configura ECOPEDAL_ADMIN_PASSWORD en GitHub Secrets."; exit 1; }
+
+      - name: Deploy Worker and provision D1
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 deploy
+
+      - name: Apply D1 migrations
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 d1 migrations apply ecopedal-db --remote --yes
+
+      - name: Set administrator credentials
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ADMIN_EMAIL: ${{ vars.ECOPEDAL_ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ECOPEDAL_ADMIN_PASSWORD }}
+        run: |
+          printf '%s' "$ADMIN_EMAIL" | npx --yes wrangler@4 secret put ADMIN_EMAIL
+          printf '%s' "$ADMIN_PASSWORD" | npx --yes wrangler@4 secret put ADMIN_PASSWORD
