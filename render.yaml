@@ -32,3 +32,4 @@ databases:
     postgresMajorVersion: '16'
     plan: free
     region: oregon
+    ipAllowList: []
